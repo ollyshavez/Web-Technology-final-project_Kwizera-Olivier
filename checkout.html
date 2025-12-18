@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - AgriShop</title>
+    <script>
+        if (!localStorage.getItem('user')) {
+            window.location.replace('login.html');
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#f68b1e', // Jumia Orange
+                            primary: '#2e7d32'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .step-active {
+            border-color: #f68b1e;
+        }
+
+        .step-done .icon-box {
+            background-color: #22c55e;
+            color: white;
+            border-color: #22c55e;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="bg-brand-primary text-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 font-bold text-xl">
+                <i data-lucide="sprout"></i> AgriShop
+            </a>
+            <div class="text-sm opacity-90">Secure Place Order</div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-6 grid md:grid-cols-3 gap-6 max-w-5xl">
+
+        <!-- Steps Column -->
+        <div class="md:col-span-2 space-y-4">
+
+            <!-- Step 1: Address -->
+            <div id="step-1" class="bg-white p-4 rounded shadow border border-brand-orange">
+                <div class="flex justify-between items-center cursor-pointer" onclick="toggleStep(1)"
+                    style="user-select: none;">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="icon-box w-6 h-6 rounded-full border-2 border-brand-orange flex items-center justify-center text-xs font-bold text-brand-orange">
+                            1</div>
+                        <h3 class="font-bold text-gray-700 uppercase">Customer Address</h3>
+                    </div>
+                    <button class="text-brand-orange text-sm font-medium">Change</button>
+                </div>
+                <!-- Content -->
+                <div class="mt-4 pl-9 space-y-4" id="step-1-content">
+                    <p class="text-gray-600 text-sm mb-2">Confirm your delivery details.</p>
+                    <form id="form-step-1" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-500 uppercase font-bold mb-1">First Name</label>
+                                <input type="text" id="chk-fname" class="w-full border p-2 rounded text-sm bg-gray-50"
+                                    readonly>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 uppercase font-bold mb-1">Last Name</label>
+                                <input type="text" id="chk-lname" class="w-full border p-2 rounded text-sm bg-gray-50"
+                                    readonly>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 uppercase font-bold mb-1">Phone Number
+                                (MoMo)</label>
+                            <span class="text-xs text-gray-400">Prefix +250 or 07...</span>
+                            <input type="tel" id="chk-phone" class="w-full border p-2 rounded text-sm"
+                                placeholder="e.g. 078XXXXXXX" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 uppercase font-bold mb-1">Address /
+                                Location</label>
+                            <input type="text" id="chk-address" class="w-full border p-2 rounded text-sm"
+                                placeholder="District, Sector, Street/Landmark" required>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="button" onclick="validateStep1()"
+                                class="bg-brand-orange text-white px-8 py-2 rounded shadow font-bold hover:bg-orange-600 transition">Save
+                                & Continue</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Step 2: Delivery Details -->
+            <div id="step-2" class="bg-white p-4 rounded shadow border border-transparent">
+                <div class="flex justify-between items-center cursor-pointer" onclick="toggleStep(2)">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="icon-box w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-bold text-gray-400">
+                            2</div>
+                        <h3 class="font-bold text-gray-500 uppercase">Delivery Details</h3>
+                    </div>
+                    <button class="text-brand-orange text-sm font-medium hidden">Change</button>
+                </div>
+                <div class="mt-4 pl-9 hidden" id="step-2-content">
+                    <p class="text-sm text-gray-600 mb-4">How do you want your order delivered?</p>
+
+                    <!-- Methods -->
+                    <div class="space-y-3">
+                        <label
+                            class="block border rounded p-4 cursor-pointer hover:border-brand-orange has-[:checked]:border-brand-orange has-[:checked]:bg-orange-50 transition">
+                            <div class="flex items-start gap-3">
+                                <input type="radio" name="delivery_method" value="door" class="mt-1 accent-brand-orange"
+                                    checked>
+                                <div>
+                                    <span class="font-bold text-gray-800">Door Delivery</span>
+                                    <p class="text-xs text-gray-500 mt-1">Delivered to your specified address. Delivery
+                                        fees may apply.</p>
+                                    <div
+                                        class="mt-2 text-xs bg-green-100 text-green-700 inline-block px-2 py-1 rounded">
+                                        Delivery between 24-48 hours</div>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label
+                            class="block border rounded p-4 cursor-pointer hover:border-brand-orange has-[:checked]:border-brand-orange has-[:checked]:bg-orange-50 transition">
+                            <div class="flex items-start gap-3">
+                                <input type="radio" name="delivery_method" value="pickup"
+                                    class="mt-1 accent-brand-orange">
+                                <div>
+                                    <span class="font-bold text-gray-800">Pickup Station</span>
+                                    <p class="text-xs text-gray-500 mt-1">Collect from our nearest aggregation center.
+                                    </p>
+                                    <select id="pickup-station" class="mt-2 w-full border p-2 text-sm rounded bg-white">
+                                        <option value="1">Kigali - downtown (AgriShop HQ)</option>
+                                        <option value="2">Musanze - Market Center</option>
+                                        <option value="3">Huye - Bus Park</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="flex justify-end mt-4">
+                        <button type="button" onclick="validateStep2()"
+                            class="bg-brand-orange text-white px-8 py-2 rounded shadow font-bold hover:bg-orange-600 transition">Save
+                            & Continue</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Payment Method -->
+            <div id="step-3" class="bg-white p-4 rounded shadow border border-transparent">
+                <div class="flex justify-between items-center cursor-pointer" onclick="toggleStep(3)">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="icon-box w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-bold text-gray-400">
+                            3</div>
+                        <h3 class="font-bold text-gray-500 uppercase">Payment Method</h3>
+                    </div>
+                    <button class="text-brand-orange text-sm font-medium hidden">Change</button>
+                </div>
+                <div class="mt-4 pl-9 hidden" id="step-3-content">
+                    <p class="text-sm text-gray-600 mb-4">Choose how you want to pay.</p>
+
+                    <div class="space-y-3">
+                        <label
+                            class="block border rounded p-4 cursor-pointer hover:border-brand-orange has-[:checked]:border-brand-orange has-[:checked]:bg-orange-50 transition">
+                            <div class="flex items-center gap-3">
+                                <input type="radio" name="payment_method" value="momo" class="accent-brand-orange"
+                                    checked>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-gray-800">Mobile Money (MTN/Airtel)</span>
+                                    <!-- Simple Icon placeholder -->
+                                    <span class="text-xs bg-yellow-400 text-black px-1 rounded font-bold">MoMo</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2 ml-6">Pay instantly via mobile money prompt upon
+                                confirming.</p>
+                        </label>
+
+                        <label
+                            class="block border rounded p-4 cursor-pointer hover:border-brand-orange has-[:checked]:border-brand-orange has-[:checked]:bg-orange-50 transition">
+                            <div class="flex items-center gap-3">
+                                <input type="radio" name="payment_method" value="cod" class="accent-brand-orange">
+                                <div>
+                                    <span class="font-bold text-gray-800">Cash on Delivery</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2 ml-6">Pay cash when you receive your products. Please
+                                have exact change.</p>
+                        </label>
+                    </div>
+
+                    <div class="flex justify-end mt-4">
+                        <button type="button" onclick="validateStep3()"
+                            class="bg-brand-orange text-white px-8 py-2 rounded shadow font-bold hover:bg-orange-600 transition">Save
+                            & Continue</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Order Summary Column -->
+        <div class="col-span-1">
+            <div class="bg-white rounded shadow p-4 sticky top-24">
+                <h3 class="font-bold text-gray-700 border-b pb-2 mb-3 uppercase text-sm">Order Summary</h3>
+
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-gray-600">Item's total (<span id="summary-count">0</span>)</span>
+                    <span class="font-bold" id="summary-subtotal">0 RWF</span>
+                </div>
+                <div class="flex justify-between text-sm mb-4">
+                    <span class="text-gray-600">Delivery fees</span>
+                    <span class="font-bold" id="summary-delivery">0 RWF</span>
+                </div>
+
+                <div class="flex justify-between text-xl font-bold border-t pt-3 mb-4 text-gray-900">
+                    <span>Total</span>
+                    <span id="summary-total" class="text-brand-orange">0 RWF</span>
+                </div>
+
+                <div class="mb-4">
+                    <input type="text" placeholder="Enter voucher code" class="w-full border p-2 rounded text-sm mb-2">
+                    <button
+                        class="w-full border border-brand-orange text-brand-orange font-bold text-sm py-2 rounded uppercase hover:bg-orange-50">Apply</button>
+                </div>
+
+                <button onclick="placeOrder()" id="btn-confirm"
+                    class="w-full bg-brand-orange hover:bg-orange-600 text-white font-bold py-3 rounded shadow uppercase transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled>
+                    Confirm Order
+                </button>
+
+                <p class="text-[10px] text-gray-400 mt-3 text-center">
+                    By proceeding, you agree to our Terms & Conditions.
+                </p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Included main.js from external file (which defines 'let cart') -->
+    <script src="js/main.js"></script>
+
+    <script>
+        // State
+        let currentStep = 1;
+        let orderPayload = {
+            delivery_method: 'door',
+            payment_method: 'momo',
+            pickup_station: 1,
+            user_details: {}
+        };
+        // RENAMED to avoid conflict with main.js global 'cart'
+        let orderCart = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("Checkout script loaded");
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Fill Step 1 with better fallback
+            // Try different casing keys
+            const fname = user.first_name || user.firstname || user.firstName || '';
+            const lname = user.last_name || user.lastname || user.lastName || '';
+
+            document.getElementById('chk-fname').value = fname;
+            document.getElementById('chk-lname').value = lname;
+            document.getElementById('chk-phone').value = user.phone || user.mobile || '';
+            document.getElementById('chk-address').value = user.address || user.location || '';
+
+            console.log("User details pre-filled", { fname, lname });
+
+            // Load Cart Logic
+            const cartKey = `cart_${user.id}`;
+            orderCart = JSON.parse(localStorage.getItem(cartKey) || '[]');
+
+            // Fallback: If user cart is empty, check guest cart (recovery logic)
+            if (orderCart.length === 0) {
+                const guestCart = JSON.parse(localStorage.getItem('cart_guest') || '[]');
+                if (guestCart.length > 0) {
+                    console.log("Restoring guest cart...");
+                    orderCart = guestCart;
+                    localStorage.setItem(cartKey, JSON.stringify(orderCart));
+                }
+            }
+
+            // Last resort: Check if global 'cart' from main.js has items
+            if (orderCart.length === 0 && typeof cart !== 'undefined' && cart.length > 0) {
+                console.log("Using global cart items");
+                orderCart = cart;
+            }
+
+            if (orderCart.length === 0) {
+                console.warn("Cart is empty");
+                if (confirm('Your cart is empty! Return to marketplace?')) {
+                    window.location.href = 'market.html';
+                }
+                return;
+            }
+
+            console.log("Cart loaded", orderCart);
+            updateSummary();
+            lucide.createIcons();
+        });
+
+        function formatRWF(amount) {
+            return new Intl.NumberFormat('rw-RW', { style: 'currency', currency: 'RWF', maximumFractionDigits: 0 }).format(amount);
+        }
+
+        function updateSummary() {
+            if (!orderCart || orderCart.length === 0) return;
+
+            const subtotal = orderCart.reduce((sum, item) => sum + (Number(item.price) * (Number(item.qty) || 1)), 0);
+
+            let deliveryFee = 0;
+            const methodInput = document.querySelector('input[name="delivery_method"]:checked');
+            if (methodInput) {
+                deliveryFee = methodInput.value === 'door' ? 1500 : 500;
+            }
+
+            document.getElementById('summary-count').textContent = orderCart.length;
+            document.getElementById('summary-subtotal').textContent = formatRWF(subtotal);
+            document.getElementById('summary-delivery').textContent = formatRWF(deliveryFee);
+            document.getElementById('summary-total').textContent = formatRWF(subtotal + deliveryFee);
+        }
+
+        function toggleStep(step) {
+            if (step > currentStep) return;
+
+            document.querySelectorAll('[id^=step-]').forEach(el => {
+                const id = parseInt(el.id.split('-')[1]);
+                const content = document.getElementById(`step-${id}-content`);
+
+                if (id === step) {
+                    content.classList.remove('hidden');
+                    el.classList.add('border-brand-orange');
+                    el.classList.remove('border-transparent');
+                } else {
+                    content.classList.add('hidden');
+                    el.classList.remove('border-brand-orange');
+                    el.classList.add('border-transparent');
+                }
+            });
+        }
+
+        function markStepDone(step) {
+            const stepEl = document.getElementById(`step-${step}`);
+            stepEl.classList.add('step-done');
+            if (!stepEl.querySelector('i[data-lucide="check"]')) {
+                stepEl.querySelector('h3').innerHTML += ' <i data-lucide="check" class="inline w-4 h-4 text-green-500"></i>';
+                lucide.createIcons();
+            }
+        }
+
+        function validateStep1() {
+            try {
+                const phoneInput = document.getElementById('chk-phone');
+                let phone = phoneInput.value.trim();
+                const address = document.getElementById('chk-address').value.trim();
+
+                if (!phone || !address) {
+                    alert('Please fill in Address and Phone (MoMo) fields.');
+                    return;
+                }
+
+                // Clean phone
+                const cleanPhone = phone.replace(/[\s-]/g, '');
+
+                // Relaxed Regex: Just check length for now to be safe
+                if (cleanPhone.length < 8) {
+                    alert('Phone number seems too short.');
+                    return;
+                }
+
+                orderPayload.user_details = { phone: cleanPhone, address };
+
+                markStepDone(1);
+                currentStep = 2;
+                toggleStep(2);
+
+            } catch (e) {
+                console.error(e);
+                alert("Error validating step 1: " + e.message);
+            }
+        }
+
+        function validateStep2() {
+            const method = document.querySelector('input[name="delivery_method"]:checked').value;
+            orderPayload.delivery_method = method;
+
+            if (method === 'pickup') {
+                orderPayload.pickup_station_id = document.getElementById('pickup-station').value;
+            } else {
+                orderPayload.pickup_station_id = 0;
+            }
+
+            updateSummary();
+            markStepDone(2);
+            currentStep = 3;
+            toggleStep(3);
+        }
+
+        function validateStep3() {
+            const method = document.querySelector('input[name="payment_method"]:checked').value;
+            orderPayload.payment_method = method;
+
+            markStepDone(3);
+            currentStep = 4;
+            document.getElementById('btn-confirm').disabled = false;
+        }
+
+        async function placeOrder() {
+            const btn = document.getElementById('btn-confirm');
+            btn.textContent = 'Processing...';
+            btn.disabled = true;
+
+            const user = JSON.parse(localStorage.getItem('user'));
+
+            const data = {
+                user_id: user.id || user.user_id, // check both
+                cart: orderCart,
+                phone: orderPayload.user_details.phone,
+                address: orderPayload.user_details.address,
+                instructions: '',
+                delivery_method: orderPayload.delivery_method,
+                payment_method: orderPayload.payment_method,
+                pickup_station_id: orderPayload.pickup_station_id
+            };
+
+            try {
+                const res = await fetch('api/orders.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                // Check if response is JSON (handle HTML errors)
+                const text = await res.text();
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    console.error("Raw response:", text);
+                    throw new Error("Server Error: " + text.substring(0, 50));
+                }
+
+                if (result.success) {
+                    // Empty the Cart
+                    localStorage.setItem(`cart_${user.id}`, '[]');
+                    const oid = result.order_ids ? result.order_ids[0] : 0;
+                    window.location.href = `tracking.html?order_id=${oid}&new=true`;
+                } else {
+                    alert('Order Failed: ' + (result.error || 'Unknown Error'));
+                    btn.disabled = false;
+                    btn.textContent = 'Confirm Order';
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Connection Failed: ' + e.message);
+                btn.disabled = false;
+                btn.textContent = 'Confirm Order';
+            }
+        }
+
+        document.querySelectorAll('input[name="delivery_method"]').forEach(input => {
+            input.addEventListener('change', updateSummary);
+        });
+
+    </script>
+</body>
+
+</html>

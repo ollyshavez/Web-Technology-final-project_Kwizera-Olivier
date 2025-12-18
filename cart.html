@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriShop - Cart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 flex flex-col min-h-screen">
+
+    <nav class="sticky top-0 z-50 bg-green-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 hover:opacity-90">
+                <div class="bg-white p-1 rounded-full"><i data-lucide="sprout" class="text-green-700 w-6 h-6"></i></div>
+                <span class="font-bold text-xl">AgriShop</span>
+            </a>
+            <div class="hidden md:flex items-center gap-6">
+                <a href="index.html" class="hover:text-green-200">Home</a>
+                <a href="market.html" class="hover:text-green-200">Marketplace</a>
+                <a href="advisory.html" class="hover:text-green-200">Advisory</a>
+                <a href="admin.html" id="nav-admin-link"
+                    class="hover:text-amber-300 font-bold hidden text-amber-200">Admin Panel</a>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="cart.html" class="relative hover:scale-110 transition">
+                    <i data-lucide="shopping-cart" class="w-6 h-6 text-yellow-300"></i>
+                    <span id="cart-count"
+                        class="absolute -top-2 -right-2 bg-yellow-500 text-green-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-2xl">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+            <i data-lucide="shopping-cart" class="text-green-600"></i> Shopping Cart
+        </h2>
+
+        <div id="cart-items"
+            class="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100 divide-y divide-gray-100">
+            <!-- Items injected here -->
+            <div class="p-10 text-center text-gray-400">Your cart is empty.</div>
+        </div>
+
+        <div id="cart-summary" class="bg-gray-50 p-6 border-t border-gray-100 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-lg font-medium text-gray-600">Total</span>
+                <span class="text-2xl font-bold text-gray-900" id="cart-total">0 RWF</span>
+            </div>
+            <button id="checkout-btn" onclick="window.location.href='checkout.html'"
+                class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg shadow-md transition flex items-center justify-center gap-2">
+                Proceed to Checkout <i data-lucide="chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- Checkout Modal -->
+        <div id="checkout-modal"
+            class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+                <h3 class="text-xl font-bold mb-4">Delivery Details</h3>
+                <form id="checkout-form" class="space-y-4">
+                    <input type="tel" placeholder="Phone (MOMO)" required class="w-full border p-2 rounded">
+                    <input type="text" placeholder="Address" required class="w-full border p-2 rounded">
+                    <textarea placeholder="Instructions" class="w-full border p-2 rounded h-20"></textarea>
+                    <button type="submit" class="w-full bg-yellow-500 font-bold py-3 rounded">Pay & Order</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/main.js?v=34"></script>
+    <script src="js/footer.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Re-fetch cart from the Correct Key (logic shared with main.js, but we need to re-derive it here or rely on main.js var if possible. main.js runs first)
+            // Ideally main.js sets 'cart' global. Let's rely on main.js to have initialized 'cart' variable.
+            // However, main.js is loaded as module or deferred? No, it's standard.
+            // To be safe, let's re-run the key logic here since we need to render.
+
+            const user = JSON.parse(localStorage.getItem('user'));
+            const cartKey = user ? `cart_${user.id}` : 'cart_guest';
+            // We use the global 'cart' from main.js if available, but let's refresh it to be sure
+            cart = JSON.parse(localStorage.getItem(cartKey) || '[]');
+
+            renderCart();
+            lucide.createIcons();
+        });
+
+        function formatRWF(amount) {
+            return new Intl.NumberFormat('rw-RW', { style: 'currency', currency: 'RWF', maximumFractionDigits: 0 }).format(amount);
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            const summary = document.getElementById('cart-summary');
+            const totalEl = document.getElementById('cart-total');
+
+            if (cart.length === 0) {
+                container.innerHTML = '<div class="p-10 text-center text-gray-400">Your cart is empty.</div>';
+                summary.classList.add('hidden');
+                return;
+            }
+
+            container.innerHTML = '';
+            let total = 0;
+
+            cart.forEach((item, idx) => {
+                const itemTotal = item.price * (item.qty || 1);
+                total += itemTotal;
+
+                const div = document.createElement('div');
+                div.className = 'p-4 flex justify-between items-center';
+                div.innerHTML = `
+                    <div class="flex items-center gap-4">
+                         <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center relative">
+                            <i data-lucide="leaf"></i>
+                            <span class="absolute -top-1 -right-1 bg-green-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow border border-white font-bold">${item.qty || 1}</span>
+                         </div>
+                         <div>
+                            <h4 class="font-bold text-gray-800">${item.name}</h4>
+                            <div class="text-xs text-gray-500">${item.qty || 1} x ${formatRWF(item.price)}</div>
+                            <span class="text-sm text-green-600 font-bold">${formatRWF(itemTotal)}</span>
+                        </div>
+                    </div>
+                    <button onclick="removeItem(${idx})" class="text-red-400 hover:text-red-600 bg-red-50 p-2 rounded-lg transition"><i data-lucide="trash-2" width="18"></i></button>
+                `;
+                container.appendChild(div);
+            });
+
+            totalEl.textContent = formatRWF(total);
+            summary.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        window.removeItem = (idx) => {
+            if (!confirm('Remove this item?')) return;
+            cart.splice(idx, 1);
+
+            const user = JSON.parse(localStorage.getItem('user'));
+            const cartKey = user ? `cart_${user.id}` : 'cart_guest';
+            localStorage.setItem(cartKey, JSON.stringify(cart));
+
+            renderCart();
+            updateCartCount(); // From main.js
+        };
+
+        // Checkout Logic
+        const modal = document.getElementById('checkout-modal');
+        document.getElementById('checkout-btn').addEventListener('click', () => {
+            modal.classList.remove('hidden');
+        });
+
+        document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const inputs = e.target.querySelectorAll('input, textarea');
+            const phone = inputs[0].value.trim();
+
+            // Validate Rwandan Format: 07XXXXXXXX (10 digits)
+            if (!/^07\d{8}$/.test(phone)) {
+                alert('Invalid MoMo Number! Must start with 07 and be 10 digits.');
+                return;
+            }
+
+            try {
+                // Prepare Data
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (!user) { alert("Please Login"); return; }
+
+                const orderData = {
+                    user_id: user.id,
+                    phone: phone,
+                    address: inputs[1].value,
+                    instructions: inputs[2].value,
+                    cart: cart // The global cart array
+                };
+
+                const res = await fetch('api/orders.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('Order Placed Successfully!');
+
+                    // Clear Cart
+                    cart = [];
+                    const cartKey = `cart_${user.id}`;
+                    localStorage.setItem(cartKey, '[]');
+
+                    // Redirect to Dashboard
+                    window.location.href = 'dashboard.html';
+                } else {
+                    alert('Failed: ' + (data.error || 'Unknown Error'));
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Payment/Network Failed');
+            }
+        });
+    </script>
+</body>
+
+</html>

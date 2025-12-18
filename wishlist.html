@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wishlist - AgriShop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 flex flex-col min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-green-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 hover:opacity-90">
+                <div class="bg-white p-1 rounded-full"><i data-lucide="sprout" class="text-green-700 w-6 h-6"></i></div>
+                <span class="font-bold text-xl">AgriShop</span>
+            </a>
+            <div class="hidden md:flex items-center gap-6">
+                <a href="index.html" class="hover:text-green-200">Home</a>
+                <a href="market.html" class="hover:text-green-200">Marketplace</a>
+                <a href="advisory.html" class="hover:text-green-200">Advisory</a>
+                <a href="wishlist.html" class="font-bold border-b-2 border-white">Wishlist</a>
+                <a href="dashboard.html" id="nav-dashboard-link" class="hover:text-green-200 hidden">Dashboard</a>
+                <a href="admin.html" id="nav-admin-link"
+                    class="hover:text-amber-300 font-bold hidden text-amber-200">Admin Panel</a>
+            </div>
+            <div class="flex items-center gap-3">
+                <!-- Role/User injected by JS -->
+                <a href="cart.html" class="relative hover:scale-110 transition ml-2">
+                    <i data-lucide="shopping-cart" class="w-6 h-6 text-white"></i>
+                    <span id="cart-count"
+                        class="absolute -top-2 -right-2 bg-yellow-500 text-green-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-5xl">
+        <h1 class="text-3xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+            <i data-lucide="heart" class="text-red-500 fill-current"></i> My Wishlist
+        </h1>
+
+        <div id="wishlist-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Wishlist items injected here -->
+            <div class="col-span-full text-center py-20">
+                <div class="animate-pulse flex space-x-4 justify-center">
+                    <div class="rounded-full bg-gray-200 h-12 w-12"></div>
+                </div>
+                <p class="text-gray-400 mt-4">Loading wishlist...</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/main.js?v=34"></script>
+    <script src="js/footer.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Custom load function or reuse parts? 
+            // We'll add loadWishlistPage() to main.js
+            if (typeof loadWishlistPage === 'function') {
+                loadWishlistPage();
+            } else {
+                console.error("loadWishlistPage not found");
+            }
+            lucide.createIcons();
+        });
+    </script>
+</body>
+
+</html>

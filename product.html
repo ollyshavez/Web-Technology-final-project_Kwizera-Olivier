@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - AgriShop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 flex flex-col min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-green-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 hover:opacity-90">
+                <div class="bg-white p-1 rounded-full"><i data-lucide="sprout" class="text-green-700 w-6 h-6"></i></div>
+                <span class="font-bold text-xl">AgriShop</span>
+            </a>
+            <div class="hidden md:flex items-center gap-6">
+                <a href="index.html" class="hover:text-green-200">Home</a>
+                <a href="market.html" class="font-bold border-b-2 border-white">Marketplace</a>
+                <a href="advisory.html" class="hover:text-green-200">Advisory</a>
+                <a href="dashboard.html" id="nav-dashboard-link" class="hover:text-green-200 hidden">Dashboard</a>
+                <a href="admin.html" id="nav-admin-link"
+                    class="hover:text-amber-300 font-bold hidden text-amber-200">Admin Panel</a>
+            </div>
+            <div class="flex items-center gap-3">
+                <!-- Role/User injected by JS -->
+                <a href="cart.html" class="relative">
+                    <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+                    <span id="cart-count"
+                        class="absolute -top-2 -right-2 bg-yellow-500 text-green-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Breadcrumb -->
+        <div class="text-sm text-gray-500 mb-6 flex items-center gap-2">
+            <a href="market.html" class="hover:text-green-600">Marketplace</a>
+            <i data-lucide="chevron-right" width="14"></i>
+            <span id="breadcrumb-current" class="font-bold text-gray-800">Loading...</span>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+            <!-- Left: Image -->
+            <div
+                class="relative h-[400px] bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center border border-gray-200">
+                <img id="product-image" src="" class="w-full h-full object-cover hidden" alt="Product Image">
+                <i id="product-placeholder-icon" data-lucide="leaf" class="text-green-300 w-24 h-24"></i>
+
+                <!-- Certified Badge -->
+                <span id="badge-certified"
+                    class="hidden absolute top-4 left-4 bg-blue-600 text-white text-xs px-3 py-1 rounded-full shadow font-bold tracking-wide">Certified</span>
+                <span id="badge-organic"
+                    class="hidden absolute top-4 right-4 bg-green-600 text-white text-xs px-3 py-1 rounded-full shadow font-bold tracking-wide">Organic</span>
+            </div>
+
+            <!-- Right: Details -->
+            <div class="flex flex-col">
+                <h1 id="product-name" class="text-3xl font-bold text-gray-900 mb-2">Loading Product...</h1>
+
+                <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                    <span>Sold By:</span>
+                    <span id="product-seller" class="text-green-700 font-bold hover:underline cursor-pointer">All
+                        Branches</span>
+                </div>
+
+                <div class="text-2xl font-bold text-green-700 mb-6" id="product-price">RWF 0.00</div>
+
+                <!-- Unit Tag -->
+                <div class="mb-6">
+                    <span class="text-xs font-bold text-gray-500 uppercase">Unit</span>
+                    <div class="mt-1">
+                        <span id="product-unit"
+                            class="bg-green-800 text-white text-xs font-bold px-3 py-1 rounded">KG</span>
+                    </div>
+                </div>
+
+                <!-- Quantity -->
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Quantity</label>
+                    <div class="flex items-center w-32">
+                        <input type="number" id="product-qty" value="1" min="1"
+                            class="w-full border border-gray-300 rounded-lg p-2 text-center focus:ring-2 focus:ring-green-500 outline-none">
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-4 mt-auto">
+                    <button id="add-to-cart-btn"
+                        class="bg-green-800 text-white px-8 py-3 rounded-full font-bold hover:bg-green-900 transition flex-1">
+                        Add To Cart
+                    </button>
+                    <button
+                        class="bg-green-600 text-white px-8 py-3 rounded-full font-bold hover:bg-green-700 transition flex-1">
+                        Buy Now
+                    </button>
+                    <button id="wishlist-btn"
+                        class="bg-green-800 text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-green-900 transition shadow-lg">
+                        <i data-lucide="heart" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <!-- Metadata -->
+                <div class="mt-8 space-y-2 text-sm text-gray-600 border-t pt-6">
+                    <p><strong>Availability:</strong> <span class="text-green-600">In Stock</span></p>
+                    <p><strong>Category:</strong> <span id="product-category" class="text-green-600">Local Food</span>
+                    </p>
+                    <p><strong>Share this:</strong>
+                    <div class="flex gap-2 mt-1">
+                        <button class="bg-green-800 text-white p-1.5 rounded-full"><i data-lucide="facebook"
+                                width="14"></i></button>
+                        <button class="bg-green-800 text-white p-1.5 rounded-full"><i data-lucide="twitter"
+                                width="14"></i></button>
+                        <button class="bg-green-800 text-white p-1.5 rounded-full"><i data-lucide="linkedin"
+                                width="14"></i></button>
+                    </div>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mt-12">
+            <div class="border-b border-gray-200 flex gap-8">
+                <button id="tab-desc-btn" class="tab-btn text-green-800 font-bold border-b-2 border-green-800 pb-2"
+                    onclick="switchTab('desc')">Description</button>
+                <button id="tab-reviews-btn"
+                    class="tab-btn text-gray-500 font-medium pb-2 hover:text-green-800 transition"
+                    onclick="switchTab('reviews')">Reviews</button>
+                <button id="tab-vendor-btn"
+                    class="tab-btn text-gray-500 font-medium pb-2 hover:text-green-800 transition"
+                    onclick="switchTab('vendor')">Vendor</button>
+            </div>
+
+            <div class="py-6 text-gray-700 leading-relaxed max-w-4xl min-h-[150px]">
+                <!-- Description Content -->
+                <div id="tab-desc-content">
+                    <h3 class="font-bold text-lg mb-2">Product Description</h3>
+                    <p>Fresh, high-quality produce locally sourced from Rwandan farmers. 100% organic and carefully
+                        selected to ensure the best taste and nutrition for your family.</p>
+                </div>
+
+                <!-- Reviews Content -->
+                <div id="tab-reviews-content" class="hidden">
+                    <h3 class="font-bold text-lg mb-4">Customer Reviews</h3>
+                    <div id="reviews-list" class="space-y-4 mb-8">
+                        <!-- Reviews injected here -->
+                        <p class="text-gray-400 italic">No reviews yet.</p>
+                    </div>
+
+                    <!-- Post Review Form -->
+                    <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
+                        <h4 class="font-bold mb-3">Write a Review</h4>
+                        <form id="review-form" class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-1">Rating</label>
+                                <select id="review-rating" class="border rounded px-3 py-2 w-full md:w-32 bg-white">
+                                    <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+                                    <option value="4">⭐⭐⭐⭐ (4/5)</option>
+                                    <option value="3">⭐⭐⭐ (3/5)</option>
+                                    <option value="2">⭐⭐ (2/5)</option>
+                                    <option value="1">⭐ (1/5)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-1">Comment</label>
+                                <textarea id="review-comment" class="w-full border rounded p-3 h-24"
+                                    placeholder="Share your experience..." required></textarea>
+                            </div>
+                            <button type="submit"
+                                class="bg-green-700 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-800 transition">Post
+                                Review</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Vendor Content -->
+                <div id="tab-vendor-content" class="hidden">
+                    <h3 class="font-bold text-lg mb-2">About the Seller</h3>
+                    <div class="flex items-start gap-4 mt-4">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold text-2xl uppercase"
+                            id="vendor-avatar">
+                            S
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xl" id="vendor-name-tab">Seller Name</h4>
+                            <p class="text-gray-600 mt-2 leading-relaxed" id="vendor-bio">
+                                This seller has not provided a bio yet.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        <div class="mt-12">
+            <h2 class="text-2xl font-bold mb-6">Related Products</h2>
+            <div id="related-products-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                <!-- Related items injected here -->
+                <div class="col-span-full py-8 text-center text-gray-400">Loading related items...</div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="js/toast.js"></script>
+    <script src="js/main.js?v=35"></script>
+    <script src="js/footer.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProductDetails();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriShop - Advisory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 flex flex-col min-h-screen">
+
+    <nav class="sticky top-0 z-50 bg-green-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 hover:opacity-90">
+                <div class="bg-white p-1 rounded-full"><i data-lucide="sprout" class="text-green-700 w-6 h-6"></i></div>
+                <span class="font-bold text-xl">AgriShop</span>
+            </a>
+            <div class="hidden md:flex items-center gap-6">
+                <a href="index.html" class="hover:text-green-200">Home</a>
+                <a href="market.html" class="hover:text-green-200">Marketplace</a>
+                <a href="advisory.html" class="font-bold border-b-2 border-white">Advisory</a>
+                <a href="dashboard.html" id="nav-dashboard-link" class="hover:text-green-200 hidden">Dashboard</a>
+                <a href="admin.html" id="nav-admin-link"
+                    class="hover:text-amber-300 font-bold hidden text-amber-200">Admin Panel</a>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 bg-green-800 p-1 rounded-lg border border-green-600">
+                    <i data-lucide="user" width="18"></i>
+                    <select id="role-select" class="bg-transparent text-sm outline-none cursor-pointer font-medium">
+                        <option value="buyer">Buyer</option>
+                        <option value="farmer">Farmer</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Weather Widget -->
+        <!-- Weather & Map Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Weather Widget -->
+            <div
+                class="bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-2xl p-6 shadow-lg relative overflow-hidden h-64 flex flex-col justify-between">
+                <div class="relative z-10 flex justify-between items-start">
+                    <div>
+                        <h2 class="text-2xl font-bold mb-1">Weather Forecast</h2>
+                        <p class="text-blue-100 flex items-center gap-1"><i data-lucide="map-pin" width="16"></i> <span
+                                id="weather-location">Loading...</span></p>
+                        <div class="mt-4">
+                            <span class="text-5xl font-bold" id="weather-temp">--°C</span>
+                            <p class="text-lg opacity-90 mt-1" id="weather-desc">Fetching data...</p>
+                        </div>
+                    </div>
+                    <i id="weather-icon" data-lucide="cloud" class="text-white/80 w-16 h-16"></i>
+                </div>
+                <div
+                    class="relative z-10 grid grid-cols-3 gap-2 text-center text-sm bg-white/10 rounded-lg p-2 backdrop-blur-sm">
+                    <div>
+                        <span class="block opacity-70">Wind</span>
+                        <span class="font-bold" id="weather-wind">-- km/h</span>
+                    </div>
+                    <div>
+                        <span class="block opacity-70">Humidity</span>
+                        <span class="font-bold" id="weather-humidity">--%</span>
+                    </div>
+                    <div>
+                        <span class="block opacity-70">Rain</span>
+                        <span class="font-bold" id="weather-rain">-- mm</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Widget -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden h-64 relative z-0">
+                <div id="map" class="w-full h-full z-0"></div>
+            </div>
+        </div>
+
+        <h3 id="advisory-header" class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <i data-lucide="book-open" class="text-green-600"></i> Farming Advisory
+        </h3>
+
+        <div id="advisory-grid" class="grid gap-4">
+            <!-- Content loaded via JS -->
+            <div class="text-center py-10">Loading advisory...</div>
+        </div>
+    </main>
+
+    <script src="js/main.js?v=34"></script>
+    <script src="js/footer.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAdvisory();
+            initWeatherAndMap();
+            lucide.createIcons();
+        });
+
+        async function initWeatherAndMap() {
+            // Default: Musanze
+            let lat = -1.5033;
+            let lon = 29.6325;
+
+            // 1. Initialize Map
+            const map = L.map('map').setView([lat, lon], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Draggable Marker
+            const marker = L.marker([lat, lon], { draggable: true }).addTo(map)
+                .bindPopup('Drag me to check weather!')
+                .openPopup();
+
+            // Initial Fetch
+            updateLocationName(lat, lon);
+            updateWeather(lat, lon);
+
+            // 2. Drag Event Listener
+            marker.on('dragend', async function (e) {
+                const position = marker.getLatLng();
+                lat = position.lat;
+                lon = position.lng;
+
+                // Update UI state
+                document.getElementById('weather-location').textContent = "Locating...";
+                document.getElementById('weather-desc').textContent = "Updating...";
+
+                // Fetch Data
+                await updateLocationName(lat, lon);
+                await updateWeather(lat, lon);
+
+                marker.bindPopup(`Location Updated`).openPopup();
+            });
+
+            // Helper: Update Weather
+            async function updateWeather(latitude, longitude) {
+                try {
+                    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,rain,wind_speed_10m&timezone=auto`);
+                    const data = await res.json();
+                    const current = data.current;
+
+                    if (current) {
+                        document.getElementById('weather-temp').textContent = Math.round(current.temperature_2m) + data.current_units.temperature_2m;
+                        document.getElementById('weather-wind').textContent = current.wind_speed_10m + ' ' + data.current_units.wind_speed_10m;
+                        document.getElementById('weather-humidity').textContent = current.relative_humidity_2m + data.current_units.relative_humidity_2m;
+                        document.getElementById('weather-rain').textContent = current.rain + ' ' + data.current_units.rain;
+
+                        // Condition Logic
+                        const temp = current.temperature_2m;
+                        let desc = "Pleasant";
+                        let icon = "sun";
+
+                        if (current.rain > 0) { desc = "Raining"; icon = "cloud-rain"; }
+                        else if (temp > 25) { desc = "Hot & Sunny"; icon = "sun"; }
+                        else if (temp < 15) { desc = "Chilly"; icon = "cloud"; }
+                        else { desc = "Partly Cloudy"; icon = "cloud-sun"; }
+
+                        document.getElementById('weather-desc').textContent = desc;
+
+                        const iconEl = document.getElementById('weather-icon');
+                        iconEl.setAttribute('data-lucide', icon);
+                        lucide.createIcons();
+                    }
+                } catch (e) {
+                    console.error("Weather error:", e);
+                }
+            }
+
+            // Helper: Reverse Geocoding (Nominatim)
+            async function updateLocationName(lat, lon) {
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                    const data = await res.json();
+                    let name = "Unknown Location";
+
+                    if (data.address) {
+                        const addr = data.address;
+                        // Build granular name: e.g. "Main St, Musanze"
+                        const local = addr.road || addr.neighbourhood || addr.suburb || addr.hamlet;
+                        const broader = addr.village || addr.town || addr.city || addr.county || addr.state;
+
+                        if (local && broader && local !== broader) {
+                            name = `${local}, ${broader}`;
+                        } else {
+                            name = local || broader || "Unknown Location";
+                        }
+                    }
+
+                    document.getElementById('weather-location').textContent = name;
+                } catch (e) {
+                    console.error("Geocoding failed", e);
+                    document.getElementById('weather-location').textContent = `Location: ${lat.toFixed(3)}, ${lon.toFixed(3)}`;
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

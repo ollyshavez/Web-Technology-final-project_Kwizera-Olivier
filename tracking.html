@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order - AgriShop</title>
+    <script>
+        if (!localStorage.getItem('user')) {
+            window.location.replace('login.html');
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="bg-green-700 text-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 font-bold text-xl">
+                <i data-lucide="sprout"></i> AgriShop
+            </a>
+            <a href="dashboard.html" class="text-sm font-medium hover:text-green-200">Back to Dashboard</a>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8 max-w-4xl">
+
+        <div id="new-order-msg"
+            class="hidden mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
+            role="alert">
+            <strong class="font-bold">Success!</strong>
+            <span class="block sm:inline">Thank you for placing an order on AgriShop! Your order is being
+                processed.</span>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <!-- Header -->
+            <div class="p-6 border-b bg-gray-50 flex justify-between items-center">
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800">Order <span id="order-id">#...</span></h1>
+                    <p class="text-sm text-gray-500" id="order-date">Placed on ...</p>
+                </div>
+                <div class="text-right">
+                    <span id="order-total" class="block text-lg font-bold text-green-700">0 RWF</span>
+                    <span id="order-status-badge"
+                        class="inline-block px-2 py-1 text-xs font-bold rounded bg-gray-200 text-gray-700">Loading...</span>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x border-gray-100">
+
+                <!-- Details Column -->
+                <div class="p-6 md:col-span-1 space-y-6">
+                    <div>
+                        <h3 class="font-bold text-gray-700 mb-2 uppercase text-xs">Delivery Method</h3>
+                        <p class="text-sm text-gray-600" id="delivery-method">...</p>
+                        <p class="text-xs text-gray-500 mt-1" id="delivery-detail">...</p>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-gray-700 mb-2 uppercase text-xs">Payment Method</h3>
+                        <p class="text-sm text-gray-600" id="payment-method">...</p>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-gray-700 mb-2 uppercase text-xs">Items</h3>
+                        <div id="items-list" class="space-y-3">
+                            <!-- Items -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Column -->
+                <div class="p-6 md:col-span-2 bg-white">
+                    <h3 class="font-bold text-xl mb-6 flex items-center gap-2">
+                        <i data-lucide="package-search" class="text-green-600"></i> Package History
+                    </h3>
+
+                    <div class="relative border-l-2 border-gray-200 ml-3 space-y-8" id="timeline">
+                        <!-- Timeline Items injected here -->
+                        <p class="pl-6 text-gray-500">Loading history...</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (getQueryParam('new')) {
+                document.getElementById('new-order-msg').classList.remove('hidden');
+            }
+
+            const orderIdStr = getQueryParam('order_id');
+            const user = JSON.parse(localStorage.getItem('user'));
+
+            // Validate ID is numeric and non-zero
+            if (!orderIdStr || isNaN(orderIdStr) || parseInt(orderIdStr) <= 0 || !user) {
+                console.warn("Invalid Order ID or User", { orderIdStr, user });
+                alert('Invalid Order ID. Redirecting to dashboard.');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            const orderId = parseInt(orderIdStr);
+
+            try {
+                const res = await fetch(`api/orders.php?order_id=${orderId}&user_id=${user.id}`);
+                const data = await res.json();
+
+                if (data.error) {
+                    alert(data.error);
+                    window.location.href = 'dashboard.html';
+                } else if (Array.isArray(data)) {
+                    // API returned a list? accessible if ID was 0.
+                    console.error("Received array instead of object", data);
+                    alert("Order not found or invalid response.");
+                    window.location.href = 'dashboard.html';
+                } else {
+                    renderOrder(data);
+                }
+            } catch (e) {
+                console.error(e);
+                // alert('Failed to load order.'); 
+                // Don't alert blocking, just show UI
+                document.querySelector('main').innerHTML = `<div class="text-center p-10 text-red-500">Failed to load order details.<br><span class="text-xs text-gray-500">${e.message}</span></div>`;
+            }
+        });
+
+        function renderOrder(order) {
+            document.getElementById('order-id').textContent = 'N° ' + order.id;
+            document.getElementById('order-date').textContent = new Date(order.created_at).toLocaleString();
+            document.getElementById('order-total').textContent = new Intl.NumberFormat('rw-RW', { style: 'currency', currency: 'RWF' }).format(order.total_amount);
+
+            const badge = document.getElementById('order-status-badge');
+            badge.textContent = order.status.toUpperCase();
+            badge.className = `inline-block px-2 py-1 text-xs font-bold rounded ${getStatusColor(order.status)}`;
+
+            // Delivery
+            document.getElementById('delivery-method').textContent = order.delivery_method === 'pickup' ? 'Pick-up Station' : 'Door Delivery';
+            document.getElementById('delivery-detail').textContent = order.delivery_method === 'pickup'
+                ? 'Station ID: ' + order.pickup_station_id
+                : order.delivery_address;
+
+            // Payment
+            document.getElementById('payment-method').textContent = order.payment_method === 'momo' ? 'Mobile Money' : 'Cash on Delivery';
+
+            // Items
+            const itemsContainer = document.getElementById('items-list');
+            itemsContainer.innerHTML = '';
+            order.items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'flex gap-3 text-sm';
+                div.innerHTML = `
+                    <div class="w-10 h-10 bg-gray-100 rounded flex items-center justify-center font-bold text-gray-400">IMG</div>
+                    <div>
+                        <div class="font-bold text-gray-800">${item.name}</div>
+                        <div class="text-gray-500">Qty: ${Number(item.quantity)}</div>
+                    </div>
+                `;
+                itemsContainer.appendChild(div);
+            });
+
+            // Timeline
+            renderTimeline(order);
+            lucide.createIcons();
+        }
+
+        function renderTimeline(order) {
+            const container = document.getElementById('timeline');
+            container.innerHTML = '';
+
+            let history = order.history || [];
+
+            // Synthetic history for legacy orders
+            if (history.length === 0 && order.created_at) {
+                history = [{
+                    status: 'placed',
+                    created_at: order.created_at,
+                    description: 'Order placed (Legacy Record)'
+                }];
+                // If the current status is something else (e.g. delivered) we might want more, but let's stick to simple start.
+            }
+
+            if (history.length === 0) {
+                container.innerHTML = '<p class="pl-6 text-gray-400">No history available.</p>';
+                return;
+            }
+
+            // Dedup consecutive identical statuses
+            const uniqueHistory = [];
+            let lastStatus = null;
+
+            // Sort by date just in case
+            history.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+            history.forEach(h => {
+                const currentStatus = h.status.toLowerCase();
+                if (currentStatus !== lastStatus) {
+                    uniqueHistory.push(h);
+                    lastStatus = currentStatus;
+                }
+            });
+
+            // Use deduped list
+            uniqueHistory.forEach((h, index) => {
+                const isActive = index === uniqueHistory.length - 1; // Last one is current status
+                const div = document.createElement('div');
+                div.className = 'relative pl-8 pb-4';
+                div.innerHTML = `
+                    <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full border-2 ${isActive ? 'bg-blue-600 border-blue-600 ring-4 ring-blue-100' : 'bg-gray-400 border-white'}"></div>
+                    <div>
+                        <p class="text-xs text-gray-400 mb-1">${new Date(h.created_at).toLocaleString()}</p>
+                        <p class="text-sm text-gray-700">${h.description || ''}</p>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function getStatusColor(status) {
+            switch (status) {
+                case 'delivered': case 'completed': return 'bg-green-100 text-green-700';
+                case 'cancelled': return 'bg-red-100 text-red-700';
+                case 'shipped': return 'bg-blue-100 text-blue-700';
+                default: return 'bg-yellow-100 text-yellow-700';
+            }
+        }
+    </script>
+</body>
+
+</html>

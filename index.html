@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriShop Rwanda - Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 flex flex-col min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-green-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 hover:opacity-90 transition-opacity">
+                <div class="bg-white p-1 rounded-full">
+                    <i data-lucide="sprout" class="text-green-700 w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold leading-none">AgriShop</h1>
+                    <span class="text-xs text-green-200 opacity-80">Rwanda</span>
+                </div>
+            </a>
+
+            <div class="hidden md:flex items-center gap-6">
+                <a href="index.html" class="font-bold border-b-2 border-white">Home</a>
+                <a href="market.html" class="hover:text-green-200 transition-colors">Marketplace</a>
+                <a href="advisory.html" class="hover:text-green-200 transition-colors">Advisory</a>
+                <a href="dashboard.html" id="nav-dashboard-link"
+                    class="hover:text-green-200 transition-colors hidden">Dashboard</a>
+                <a href="admin.html" id="nav-admin-link"
+                    class="hover:text-amber-300 font-bold hidden text-amber-200">Admin Panel</a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Role Toggle -->
+                <div class="flex items-center gap-2 bg-green-800 p-1 rounded-lg border border-green-600">
+                    <i data-lucide="user" width="18"></i>
+                    <select id="role-select" class="bg-transparent text-sm outline-none cursor-pointer font-medium">
+                        <option value="buyer">Buyer</option>
+                        <option value="farmer">Farmer</option>
+                    </select>
+                </div>
+                <a href="cart.html" class="relative hover:scale-110 transition">
+                    <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+                    <span id="cart-count"
+                        class="absolute -top-2 -right-2 bg-yellow-500 text-green-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-10">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="bg-green-50 rounded-3xl p-10 border border-green-100 shadow-sm animate-fade-in-up">
+                <i data-lucide="sprout" class="w-16 h-16 text-green-600 mx-auto mb-4"></i>
+                <h1 class="text-4xl font-bold text-green-900 mb-2">Welcome to AgriShop Rwanda</h1>
+                <p class="text-xl text-green-700 mb-8">Connecting Farmers, Cooperatives, and Buyers.</p>
+
+                <div class="flex justify-center gap-4 flex-wrap">
+                    <a href="market.html"
+                        class="bg-green-600 text-white px-6 py-3 rounded-xl font-bold shadow hover:bg-green-700 transition flex items-center gap-2">
+                        <i data-lucide="shopping-cart" width="20"></i> Marketplace
+                    </a>
+                    <a href="advisory.html"
+                        class="bg-white text-green-700 border border-green-200 px-6 py-3 rounded-xl font-bold shadow-sm hover:bg-green-50 transition flex items-center gap-2">
+                        <i data-lucide="leaf" width="20"></i> Advisory
+                    </a>
+                </div>
+
+                <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+                    <a href="prices.html"
+                        class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition cursor-pointer group">
+                        <div
+                            class="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-200 transition">
+                            <i data-lucide="trending-up" class="text-blue-600" width="20"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-800 flex items-center gap-2">Fair Prices <i
+                                data-lucide="arrow-right" width="14"
+                                class="text-blue-500 opacity-0 group-hover:opacity-100 transition"></i></h3>
+                        <p class="text-sm text-gray-500">Real-time market data.</p>
+                    </a>
+                    <a href="ussd.html"
+                        class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition cursor-pointer group">
+                        <div
+                            class="bg-yellow-100 w-10 h-10 rounded-full flex items-center justify-center mb-3 group-hover:bg-yellow-200 transition">
+                            <i data-lucide="phone" class="text-yellow-600" width="20"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-800 flex items-center gap-2">Offline Ready <i
+                                data-lucide="arrow-right" width="14"
+                                class="text-yellow-500 opacity-0 group-hover:opacity-100 transition"></i></h3>
+                        <p class="text-sm text-gray-500">Access via USSD *999#.</p>
+                    </a>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                        <div class="bg-purple-100 w-10 h-10 rounded-full flex items-center justify-center mb-3">
+                            <i data-lucide="award" class="text-purple-600" width="20"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-800">Quality First</h3>
+                        <p class="text-sm text-gray-500">Traceability & Certification.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-8 border-t border-gray-800">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-sm mb-4">Empowering Rwandan Agriculture through Technology.</p>
+            <div class="mt-6 text-xs text-gray-600">&copy; 2023 AgriShop Rwanda.</div>
+        </div>
+    </footer>
+
+    <script src="js/main.js?v=35"></script>
+    <script src="js/footer.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

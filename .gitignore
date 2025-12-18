@@ -1,0 +1,16 @@
+# Temporary scripts
+deploy_uploader.php
+fix_database.php
+
+# Development and system folders
+dev/
+.DS_Store
+Thumbs.db
+
+# Uploads content
+uploads/*
+!uploads/.gitkeep
+
+# Local XAMPP and OS files
+*.log
+*.tmp

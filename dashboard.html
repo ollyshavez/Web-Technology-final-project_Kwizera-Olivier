@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriShop - Farmer Dashboard</title>
+    <script>
+        if (!localStorage.getItem('user')) {
+            window.location.replace('login.html');
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#f68b1e',
+                            primary: '#2e7d32'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 flex flex-col min-h-screen">
+
+    <nav class="sticky top-0 z-50 bg-green-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 hover:opacity-90">
+                <div class="bg-white p-1 rounded-full"><i data-lucide="sprout" class="text-green-700 w-6 h-6"></i></div>
+                <span class="font-bold text-xl">AgriShop</span>
+            </a>
+            <div class="hidden md:flex items-center gap-6">
+                <a href="index.html" class="hover:text-green-200">Home</a>
+                <a href="market.html" class="hover:text-green-200">Marketplace</a>
+                <a href="dashboard.html" class="font-bold border-b-2 border-white">Dashboard</a>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 bg-green-800 p-1 rounded-lg border border-green-600">
+                    <i data-lucide="user" width="18"></i>
+                    <select id="role-select" class="bg-transparent text-sm outline-none cursor-pointer font-medium">
+                        <option value="buyer">Buyer</option>
+                        <option value="farmer">Farmer</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+
+        <!-- Welcome Section -->
+        <div class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800" id="dash-title">Dashboard</h1>
+                <p class="text-gray-500">Welcome back, <span id="user-name" class="font-bold text-green-700">User</span>
+                </p>
+            </div>
+
+            <!-- Notification Bell -->
+            <div class="relative group cursor-pointer" onclick="toggleNotifDropdown()">
+                <div class="bg-white p-2 rounded-full shadow-sm hover:shadow-md transition border border-gray-200">
+                    <i data-lucide="bell" class="text-gray-600"></i>
+                    <span id="notif-badge"
+                        class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white hidden"></span>
+                </div>
+                <!-- Dropdown -->
+                <div id="notif-dropdown"
+                    class="hidden absolute right-0 top-12 w-80 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+                    <div
+                        class="bg-gray-50 px-4 py-2 border-b text-sm font-bold text-gray-700 flex justify-between items-center">
+                        <span>Notifications</span>
+                        <button onclick="markAllRead()" class="text-xs text-blue-600 hover:underline">Mark all
+                            read</button>
+                    </div>
+                    <div id="notif-list" class="max-h-64 overflow-y-auto">
+                        <div class="p-4 text-center text-sm text-gray-400">No new notifications</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOTIFICATIONS AREA (Mobile/Legacy fallback if needed, but using dropdown) -->
+
+        <!-- ORDERS SECTION -->
+        <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden mb-8">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-gray-800" id="orders-title">Orders</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 text-gray-600 text-sm uppercase">
+                        <tr>
+                            <th class="px-6 py-3">Order ID</th>
+                            <th class="px-6 py-3" id="th-details">Details</th>
+                            <th class="px-6 py-3">Total</th>
+                            <th class="px-6 py-3">Status</th>
+                            <th class="px-6 py-3 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-list" class="divide-y divide-gray-100 text-sm">
+                        <tr>
+                            <td colspan="5" class="p-4 text-center text-gray-400">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- My Products Section -->
+        <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden mb-8">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-gray-800">My Listings</h2>
+                <button onclick="window.location.href='market.html?action=add'"
+                    class="text-sm text-green-600 font-bold hover:underline">+ Add New in Market</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 text-gray-600 text-sm uppercas">
+                        <tr>
+                            <th class="px-6 py-3">Image</th>
+                            <th class="px-6 py-3">Product</th>
+                            <th class="px-6 py-3">Price</th>
+                            <th class="px-6 py-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="my-products-list" class="divide-y divide-gray-100 text-sm">
+                        <!-- JS Injected -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <div id="edit-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+                <h3 class="text-lg font-bold mb-4">Edit Product</h3>
+                <form id="edit-form" class="space-y-4">
+                    <input type="hidden" id="edit-id">
+                    <div>
+                        <label class="block text-sm font-medium">Name</label>
+                        <input type="text" id="edit-name" class="w-full border rounded p-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Price</label>
+                        <input type="number" id="edit-price" class="w-full border rounded p-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Location</label>
+                        <input type="text" id="edit-location" class="w-full border rounded p-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Update Image</label>
+                        <input type="file" id="edit-image" class="w-full border rounded p-2 text-sm">
+                    </div>
+                    <div class="flex justify-end gap-2 mt-4">
+                        <button type="button" onclick="document.getElementById('edit-modal').classList.add('hidden')"
+                            class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Save
+                            Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Analytics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Existing Cards... -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-green-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm text-gray-500">Total Sales</p>
+                        <h3 class="text-2xl font-bold text-gray-800">RWF 450,000</h3>
+                    </div>
+                    <div class="bg-green-100 p-2 rounded-lg">
+                        <i data-lucide="trending-up" class="text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-96">
+            <h3 class="font-bold text-gray-800 mb-4">Inventory Overview</h3>
+            <div class="h-64 relative">
+                <canvas id="inventoryChart"></canvas>
+            </div>
+        </div>
+
+    </main>
+
+    <script type="module">
+        import { createIcons } from 'https://unpkg.com/lucide@latest';
+        createIcons();
+    </script>
+    <script src="js/main.js?v=34"></script>
+    <script src="js/footer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        lucide.createIcons();
+
+        // Dashboard Logic
+        // Dashboard Logic
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) { window.location.href = 'login.html'; return; }
+            currentUser = user;
+
+            document.getElementById('user-name').textContent = user.first_name || user.role;
+            document.getElementById('dash-title').textContent = user.role === 'farmer' ? 'Farmer Dashboard' : 'Buyer Dashboard';
+
+            // Role Specific UI
+            if (user.role === 'buyer') {
+                document.getElementById('orders-title').textContent = "My Purchases";
+                document.getElementById('th-details').textContent = "Seller / Items";
+                // Hide Farmer Stuff
+                const productsSection = document.querySelector('.bg-white.rounded-xl.shadow-md.mb-8'); // Rough selector, cleaner would be ID
+                // Actually my-products-list is inside a container, let's find it by ID relative
+                // Ideally I should give IDs to sections. Assuming user wants robust code, let's hide the section if it exists.
+                // Finding the section "My Listings"
+                const h2s = document.querySelectorAll('h2');
+                h2s.forEach(h => {
+                    if (h.textContent.includes('My Listings')) {
+                        h.closest('.rounded-xl').style.display = 'none';
+                    }
+                });
+                // Hide Analytics & Chart for Buyer (Simplify view)
+                const inventoryChart = document.getElementById('inventoryChart');
+                if (inventoryChart) inventoryChart.closest('.rounded-xl').style.display = 'none';
+                // Also hide "Total Sales"
+                const salesCard = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-3'); // Escape colon
+                if (salesCard) salesCard.style.display = 'none';
+
+            } else {
+                document.getElementById('orders-title').textContent = "Incoming Orders";
+                loadMyProducts(); // Only farmers load products
+            }
+
+            loadOrders();
+            pollNotifications();
+            setInterval(pollNotifications, 10000); // Poll every 10s
+        });
+
+        // Notifications
+        async function pollNotifications() {
+            if (!currentUser) return;
+            try {
+                const res = await fetch(`api/notifications.php?user_id=${currentUser.id}`);
+                const notifs = await res.json();
+
+                const badge = document.getElementById('notif-badge');
+                if (notifs.length > 0) {
+                    badge.textContent = notifs.length; // Optional count
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+
+                const list = document.getElementById('notif-list');
+                if (notifs.length === 0) {
+                    list.innerHTML = '<div class="p-4 text-center text-sm text-gray-400">No new notifications</div>';
+                } else {
+                    list.innerHTML = notifs.map(n => `
+                        <div class="p-3 border-b border-gray-50 hover:bg-gray-50 ${n.type === 'success' ? 'bg-green-50' : ''}">
+                            <p class="text-sm text-gray-800">${n.message}</p>
+                            <span class="text-xs text-gray-400">${new Date(n.created_at).toLocaleTimeString()}</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) { console.error('Notif poll error', e); }
+        }
+
+        window.toggleNotifDropdown = () => {
+            document.getElementById('notif-dropdown').classList.toggle('hidden');
+        };
+
+        window.markAllRead = async () => {
+            await fetch('api/notifications.php', {
+                method: 'POST',
+                body: JSON.stringify({ user_id: currentUser.id })
+            });
+            pollNotifications(); // Refresh
+        };
+
+        // Orders
+        async function loadOrders() {
+            try {
+                // Determine type: Farmer -> sales, Buyer -> purchases
+                const type = currentUser.role === 'farmer' ? 'sales' : 'purchases';
+                const res = await fetch(`api/orders.php?user_id=${currentUser.id}&type=${type}`);
+                const orders = await res.json();
+
+                const tbody = document.getElementById('orders-list');
+                if (orders.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-400">No orders found.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = orders.map(o => {
+                    const statusColors = {
+                        'placed': 'bg-blue-50 text-blue-600',
+                        'pending': 'bg-yellow-100 text-yellow-800',
+                        'confirmed': 'bg-indigo-100 text-indigo-800',
+                        'shipped': 'bg-orange-100 text-orange-800',
+                        'pickup_ready': 'bg-purple-100 text-purple-800',
+                        'delivered': 'bg-green-100 text-green-800',
+                        'completed': 'bg-green-100 text-green-800',
+                        'cancelled': 'bg-red-100 text-red-800'
+                    };
+                    const badge = statusColors[o.status] || 'bg-gray-100';
+
+                    // Action Buttons (Farmer only)
+                    let actions = '';
+                    if (currentUser.role === 'farmer') {
+                        // Support 'placed' (new default) and legacy 'pending'
+                        if (o.status === 'placed' || o.status === 'pending') {
+                            actions = `<div class="flex gap-2">
+                                         <button onclick="updateStatus(${o.id}, 'confirmed')" class="bg-blue-50 text-blue-600 px-2 py-1 rounded text-xs font-bold hover:bg-blue-100">Confirm</button>
+                                         <button onclick="updateStatus(${o.id}, 'cancelled')" class="bg-red-50 text-red-600 px-2 py-1 rounded text-xs font-bold hover:bg-red-100">Reject</button>
+                                       </div>`;
+                        } else if (o.status === 'confirmed') {
+                            actions = `<button onclick="updateStatus(${o.id}, 'shipped')" class="bg-brand-orange text-white px-3 py-1 rounded text-xs font-bold hover:opacity-90">Mark Shipped</button>`;
+                        } else if (o.status === 'shipped') {
+                            actions = `<button onclick="updateStatus(${o.id}, 'delivered')" class="bg-green-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-green-700">Mark Delivered</button>`;
+                        } else if (o.status === 'pickup_ready') {
+                            actions = `<button onclick="updateStatus(${o.id}, 'completed')" class="bg-green-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-green-700">Mark Picked Up</button>`;
+                        }
+                    } else {
+                        // Buyer View
+                        actions = `<div class="flex gap-2">
+                                     <button onclick="window.location.href='tracking.html?order_id=${o.id}'" class="bg-brand-orange text-white px-3 py-1 rounded text-xs font-bold hover:bg-orange-600">Track Order</button>
+                                     ${o.status === 'shipped' ? `<button onclick="updateStatus(${o.id}, 'delivered')" class="bg-green-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-green-700">Confirm Receipt</button>` : ''}
+                                   </div>`;
+                    }
+
+                    return `
+                        <tr>
+                            <td class="px-6 py-4 font-bold text-gray-600">#${o.id}</td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-bold">${currentUser.role === 'farmer' ? o.first_name + ' ' + o.last_name : 'Order Items'}</div>
+                                <div class="text-xs text-gray-400">${currentUser.role === 'farmer' ? o.delivery_address : 'Click to view items'}</div>
+                            </td>
+                            <td class="px-6 py-4 font-mono font-bold">RWF ${o.total_amount}</td>
+                            <td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs font-bold uppercase ${badge}">${o.status}</span></td>
+                            <td class="px-6 py-4 text-right">${actions}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (e) { console.error("Order load error", e); }
+        }
+
+        window.updateStatus = async (id, status) => {
+            if (!confirm(`Mark order #${id} as ${status}?`)) return;
+            try {
+                const res = await fetch('api/orders.php', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ order_id: id, status: status })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadOrders(); // Refresh
+                } else { alert("Error updating status"); }
+            } catch (e) { alert("Network error"); }
+        }
+
+        // Logic for My Products (Existing logic wrapped in function)
+        async function loadMyProducts() {
+            // ... (Existing product loading logic moved here or kept if it was clean)
+            // Re-implementing simplified for clarity as I replaced the main block
+            try {
+                const res = await fetch(`api/products.php?user_id=${currentUser.id}`);
+                const data = await res.json();
+                const myProducts = Array.isArray(data) ? data : (data.items || []);
+
+                const list = document.getElementById('my-products-list');
+                // Ensure list exists (it might be hidden but exists in DOM)
+                if (!list) return;
+
+                if (myProducts.length === 0) {
+                    list.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">No products listed yet.</td></tr>';
+                } else {
+                    list.innerHTML = myProducts.map(p => `
+                        <tr>
+                            <td class="px-6 py-3">
+                                <img src="${p.image && p.image.includes('/') ? p.image : 'https://placehold.co/40'}" class="w-10 h-10 rounded object-cover border">
+                            </td>
+                            <td class="px-6 py-3 font-medium">${p.name}</td>
+                            <td class="px-6 py-3">RWF ${p.price}</td>
+                            <td class="px-6 py-3 flex gap-2">
+                                <button onclick='openEdit(${JSON.stringify(p)})' class="bg-blue-50 text-blue-600 px-3 py-1 rounded hover:bg-blue-100 text-xs font-bold">Edit</button>
+                                <button onclick='deleteProduct(${p.id})' class="bg-red-50 text-red-600 px-3 py-1 rounded hover:bg-red-100 text-xs font-bold">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (e) {
+                console.error("Error loading products", e);
+            }
+        }
+
+        // Edit Functionality
+        window.openEdit = (p) => {
+            document.getElementById('edit-id').value = p.id;
+            document.getElementById('edit-name').value = p.name;
+            document.getElementById('edit-price').value = p.price;
+            document.getElementById('edit-location').value = p.location || '';
+            document.getElementById('edit-modal').classList.remove('hidden');
+        };
+
+        document.getElementById('edit-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('update_id', document.getElementById('edit-id').value);
+            formData.append('name', document.getElementById('edit-name').value);
+            formData.append('price', document.getElementById('edit-price').value);
+            formData.append('location', document.getElementById('edit-location').value);
+
+            const file = document.getElementById('edit-image').files[0];
+            if (file) formData.append('image', file);
+
+            try {
+                const res = await fetch('api/products.php', { method: 'POST', body: formData });
+                const json = await res.json();
+                if (json.success || json.message === 'Product updated') {
+                    alert('Updated!');
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + json.error);
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Upload failed');
+            }
+        });
+    </script>
+</body>
+
+</html>

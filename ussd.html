@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriShop - USSD Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-gray-200 flex items-center justify-center min-h-screen">
+
+    <div class="bg-black rounded-[3rem] p-4 w-80 shadow-2xl border-4 border-gray-800 relative">
+        <!-- Screen -->
+        <div
+            class="bg-green-900 h-64 rounded-lg mb-4 p-4 font-mono text-green-400 whitespace-pre-line border-2 border-green-800 shadow-inner text-sm relative overflow-hidden">
+            <div id="screen-text">Initializing...</div>
+            <div class="absolute bottom-2 left-4 w-2/3 border-b border-green-400 animate-pulse flex">
+                <span id="screen-input"></span>
+                <span class="animate-bounce">_</span>
+            </div>
+        </div>
+
+        <!-- Keypad -->
+        <div class="grid grid-cols-3 gap-2 mb-6">
+            <button
+                class="key bg-gray-800 text-white p-4 rounded-full hover:bg-gray-700 active:bg-gray-600 font-bold transition shadow-lg text-xl"
+                data-key="1">1</button>
+            <button
+                class="key bg-gray-800 text-white p-4 rounded-full hover:bg-gray-700 active:bg-gray-600 font-bold transition shadow-lg text-xl"
+                data-key="2">2</button>
+            <button
+                class="key bg-gray-800 text-white p-4 rounded-full hover:bg-gray-700 active:bg-gray-600 font-bold transition shadow-lg text-xl"
+                data-key="3">3</button>
+            <button
+                class="key bg-gray-800 text-white p-4 rounded-full hover:bg-gray-700 active:bg-gray-600 font-bold transition shadow-lg text-xl"
+                data-key="4">4</button>
+            <button
+                class="key bg-gray-800 text-white p-4 rounded-full hover:bg-gray-700 active:bg-gray-600 font-bold transition shadow-lg text-xl"
+                data-key="5">5</button>
+            <button
+                class="key bg-gray-800 text-white p-4 rounded-full hover:bg-gray-700 active:bg-gray-600 font-bold transition shadow-lg text-xl"
+                data-key="6">6</button>
+            <button
+                class="key bg-gray-800 text-white p-4 rounded-full hover:bg-gray-700 active:bg-gray-600 font-bold transition shadow-lg text-xl"
+                data-key="7">7</button>
+            <button
+                class="key bg-gray-800 text-white p-4 rounded-full hover:bg-gray-700 active:bg-gray-600 font-bold transition shadow-lg text-xl"
+                data-key="8">8</button>
+            <button
+                class="key bg-gray-800 text-white p-4 rounded-full hover:bg-gray-700 active:bg-gray-600 font-bold transition shadow-lg text-xl"
+                data-key="9">9</button>
+            <button
+                class="key bg-gray-800 text-white p-4 rounded-full hover:bg-gray-700 active:bg-gray-600 font-bold transition shadow-lg text-xl"
+                data-key="*">*</button>
+            <button
+                class="key bg-gray-800 text-white p-4 rounded-full hover:bg-gray-700 active:bg-gray-600 font-bold transition shadow-lg text-xl"
+                data-key="0">0</button>
+            <button
+                class="key bg-gray-800 text-white p-4 rounded-full hover:bg-gray-700 active:bg-gray-600 font-bold transition shadow-lg text-xl"
+                data-key="#">#</button>
+        </div>
+
+        <div class="flex gap-4 px-2">
+            <button id="btn-clr"
+                class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-red-700 shadow-lg">CLR</button>
+            <button id="btn-send"
+                class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-green-700 shadow-lg">SEND</button>
+        </div>
+
+        <a href="index.html" class="block text-center text-gray-500 mt-4 text-xs hover:text-white">Exit Simulator</a>
+    </div>
+
+    <script>
+        const screens = {
+            main: {
+                text: "AgriShop Rwanda\n1. Market Prices\n2. Weather\n3. My Account\n0. Exit",
+                actions: { '1': 'prices', '2': 'weather', '3': 'account' }
+            },
+            prices: {
+                text: "Market Prices (Avg):\n1. Potato: 400 RWF\n2. Maize: 800 RWF\n3. Beans: 600 RWF\n0. Back",
+                actions: { '0': 'main' }
+            },
+            weather: {
+                text: "Musanze: 24C\nRain Expected.\n\n0. Back",
+                actions: { '0': 'main' }
+            },
+            account: {
+                text: "Balance: 12,500 RWF\nActive Orders: 2\n\n0. Back",
+                actions: { '0': 'main' }
+            }
+        };
+
+        let currentScreen = 'main';
+        let inputBuffer = '';
+
+        const screenText = document.getElementById('screen-text');
+        const screenInput = document.getElementById('screen-input');
+
+        function updateDisplay() {
+            screenText.textContent = screens[currentScreen].text;
+            screenInput.textContent = inputBuffer;
+        }
+
+        document.querySelectorAll('.key').forEach(btn => {
+            btn.addEventListener('click', () => {
+                inputBuffer += btn.dataset.key;
+                updateDisplay();
+            });
+        });
+
+        document.getElementById('btn-clr').addEventListener('click', () => {
+            inputBuffer = '';
+            updateDisplay();
+        });
+
+        document.getElementById('btn-send').addEventListener('click', () => {
+            if (screens[currentScreen].actions && screens[currentScreen].actions[inputBuffer]) {
+                currentScreen = screens[currentScreen].actions[inputBuffer];
+            } else if (inputBuffer === '0' && currentScreen !== 'main') {
+                currentScreen = 'main';
+            }
+            inputBuffer = '';
+            updateDisplay();
+        });
+
+        updateDisplay();
+    </script>
+</body>
+
+</html>
